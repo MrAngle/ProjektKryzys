@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Field {
+public class Field : MonoBehaviour{
 
 
     public int movmentRatio;

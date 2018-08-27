@@ -24,9 +24,42 @@ namespace Completed
 		//		maximum = max;
 		//	}
 		//}
-		
-		
-		public int columns = 8; 										//Number of columns in our game board.
+        static class BoardHolder
+        {
+            private static List<List<GameObject>> fieldHolder = new List<List<GameObject>>();
+
+            public static List<List<GameObject>> FieldHolder
+            {
+                get
+                {
+                    return fieldHolder;
+                }
+
+                set
+                {
+                    fieldHolder = value;
+                }
+            }
+            public static void AddNewRow()
+            {
+                fieldHolder.Add(new List<GameObject>());
+            }
+
+            public static void AddAtTheEnd(GameObject gameObject, int column)
+            {
+                fieldHolder[column].Add( Instantiate(gameObject, new Vector3((float)column, fieldHolder[column].Count, 0f), Quaternion.identity) as GameObject);
+            }
+
+            public static void ChangeFieldOn(GameObject gameObject, int axisX,  int axisY)
+            {
+                fieldHolder[axisX][axisY] = Instantiate(gameObject, new Vector3(axisX, axisY, 0f), Quaternion.identity) as GameObject;
+            }
+
+        }
+        public List<List<GameObject>> gridPositionsList = new List<List<GameObject>>();
+
+
+        public int columns = 8; 										//Number of columns in our game board.
 		public int rows = 8;											//Number of rows in our game board.
 		//public Count wallCount = new Count (5, 9);						//Lower and upper limit for our random number of walls per level.
 		//public Count foodCount = new Count (1, 5);						//Lower and upper limit for our random number of food items per level.
@@ -40,7 +73,7 @@ namespace Completed
         //private Transform boardHolder;									//A variable to store a reference to the transform of our Board object.
 		//private List <Vector3> gridPositions = new List <Vector3> ();	//A list of possible locations to place tiles.
 
-        private List<List<Field>> gridPositionsList = new List<List<Field>>();
+        
 
 
         //Clears our list gridPositions and prepares it to generate a new board.
@@ -65,55 +98,66 @@ namespace Completed
 		//Sets up the outer walls and floor (background) of the game board.
 		void BoardSetup ()
 		{
-            
+
             //Instantiate Board and set boardHolder to its transform.
             //boardHolder = new GameObject ("Board").transform;
-			
-			//Loop along x axis, starting from -1 (to fill corner) with floor or outerwall edge tiles.
-			for(int x = 0; x < columns + 1; x++)
+
+            //Loop along x axis, starting from -1 (to fill corner) with floor or outerwall edge tiles.
+            GameObject toInstantiate = floorTiles[Random.Range(0, floorTiles.Length)];
+
+            for (int x = 0; x < columns + 1; x++)
 			{
-                gridPositionsList.Add(new List<Field>());
+                //gridPositionsList.Add(new List<GameObject>());
+                BoardHolder.AddNewRow();
                 //Loop along y axis, starting from -1 to place floor or outerwall tiles.
                 for (int y = 0; y < rows + 1; y++)
 				{
-                    Field f;
+                    //Field f;
                     //print("gyuyugyu");
                     //Choose a random tile from our array of floor tile prefabs and prepare to instantiate it.
-                    //GameObject toInstantiate = floorTiles[Random.Range (0,floorTiles.Length)];
-                    f = new Field(floorTiles[Random.Range(0, floorTiles.Length)]);
+                    toInstantiate = floorTiles[Random.Range (0,floorTiles.Length)];
+                    //f = new Field(floorTiles[Random.Range(0, floorTiles.Length)]);
 
                     //Check if we current position is at board edge, if so choose a random outer wall prefab from our array of outer wall tiles.
                     if (x == -1 || x == columns || y == -1 || y == rows)
-                        //toInstantiate = outerWallTiles [Random.Range (0, outerWallTiles.Length)];
-                        f = new Field(outerWallTiles[Random.Range(0, outerWallTiles.Length)]);
+                        toInstantiate = outerWallTiles [Random.Range (0, outerWallTiles.Length)];
+                    //f = new Field(outerWallTiles[Random.Range(0, outerWallTiles.Length)]);
 
-                    gridPositionsList[x].Add(f);
-
-
+                    //print(x + " " + y);
+                    BoardHolder.AddAtTheEnd(toInstantiate, x);
+                    
 
                     //Instantiate the GameObject instance using the prefab chosen for toInstantiate at the Vector3 corresponding to current grid position in loop, cast it to GameObject.
                     //GameObject instance =
-                    //    Instantiate(f.Instance, new Vector3(x, y, 0f), Quaternion.identity) as GameObject;
+                    //    Instantiate(toInstantiate, new Vector3(x, y, 0f), Quaternion.identity) as GameObject;
 
+
+                    //gridPositionsList[x].Add(instance);
                     //Set the parent of our newly instantiated object instance to boardHolder, this is just organizational to avoid cluttering hierarchy.
                     //instance.transform.SetParent (boardHolder);
                 }
-			}
-		}
+               
+            }
+            BoardHolder.ChangeFieldOn(outerWallTiles[Random.Range(0, outerWallTiles.Length)], 3, 3);
+
+        }
 
 
         public void DrawScene()
         {
-            for (int x = 0; x < gridPositionsList.Count; x++)
+            for (int x = 0; x < BoardHolder.FieldHolder.Count; x++)
             {
-                for (int y = 0; y < gridPositionsList[x].Count; y++)
+                for (int y = 0; y < BoardHolder.FieldHolder[x].Count; y++)
                 {
-                    GameObject instance =
-                        Instantiate(gridPositionsList[x][y].Instance, new Vector3(x, y, 0f), Quaternion.identity) as GameObject;
+                    print(BoardHolder.FieldHolder[x][y].GetComponent<Field>().movmentRatio);
+                    //GameObject instance =
+                    //    Instantiate(gridPositionsList[x][y].Instance, new Vector3(x, y, 0f), Quaternion.identity) as GameObject;
+                    //instance.gameObject.
                 }
             }
 
         }
+
 		
 		
 		
@@ -122,9 +166,10 @@ namespace Completed
 		{
 			//Creates the outer walls and floor.
 			BoardSetup ();
-			
-			//Reset our list of gridpositions.
-			//InitialiseList ();
+            //gridPositionsList[2][2] = new Field(outerWallTiles[Random.Range(0, outerWallTiles.Length)]);
+            //Reset our list of gridpositions.
+            //InitialiseList ();
+            
             DrawScene();
 
             //GameObject toInstantiate = outerWallTiles[Random.Range(0, outerWallTiles.Length)];
